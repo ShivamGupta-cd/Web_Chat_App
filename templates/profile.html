@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App | Profile</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="auth-container">
+        <section class="auth-card profile-card" aria-label="Profile">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div class="profile-header">
+                <h2>Profile</h2>
+                <p>Update your public details</p>
+            </div>
+            <div class="profile-avatar-wrap">
+                {% if user['avatar_path'] %}
+                    <img src="{{ url_for('main.upload_file', filename=user['avatar_path']) }}" alt="avatar" class="profile-avatar">
+                {% else %}
+                    <div class="profile-avatar placeholder" aria-hidden="true">{{ (form.display_name.data or 'U')[0] }}</div>
+                {% endif %}
+            </div>
+            <form method="POST" enctype="multipart/form-data" class="profile-form">
+                {{ form.csrf_token }}
+                <label for="display_name">Display name</label>
+                <input id="display_name" type="text" name="display_name" value="{{ form.display_name.data or '' }}" placeholder="Display name">
+                <label for="bio">Bio</label>
+                <textarea id="bio" name="bio" placeholder="Bio">{{ form.bio.data or '' }}</textarea>
+                <label for="avatar">Avatar</label>
+                <input id="avatar" type="file" name="avatar" accept=".png,.jpg,.jpeg,.gif,.webp">
+                <button type="submit" class="btn">Save Profile</button>
+            </form>
+            <p class="profile-back"><a class="link" href="{{ url_for('main.dashboard') }}">Back to dashboard</a></p>
+        </section>
+    </main>
+</body>
+</html>

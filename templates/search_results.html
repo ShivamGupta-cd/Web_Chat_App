@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App | Search</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="auth-container">
+        <section class="auth-card">
+            <h2>Search results</h2>
+            <p style="color:white; margin-bottom:10px;">Query: "{{ q }}"</p>
+            {% if results %}
+                {% for row in results %}
+                    <div class="other-msg" style="max-width:100%; margin-bottom:8px;">
+                        {{ row['message'] }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color:white;">No matching messages.</p>
+            {% endif %}
+            <p style="margin-top:12px;"><a class="link" href="{{ url_for('main.dashboard', chat=chat_id) }}">Back to chat</a></p>
+        </section>
+    </main>
+</body>
+</html>

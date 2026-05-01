@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App | Groups</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="auth-container">
+        <section class="auth-card">
+            <h2>Groups</h2>
+            <p style="color:white;margin-bottom:10px;">Phase 4 scaffold: roles and moderation hooks.</p>
+            {% if groups %}
+                {% for group in groups %}
+                    <div class="other-msg" style="max-width:100%; margin-bottom:8px;">
+                        {{ group['name'] }} (role: {{ group['role'] }})
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color:white;">No groups yet.</p>
+            {% endif %}
+            <p style="margin-top:12px;"><a class="link" href="{{ url_for('main.dashboard') }}">Back to dashboard</a></p>
+        </section>
+    </main>
+</body>
+</html>

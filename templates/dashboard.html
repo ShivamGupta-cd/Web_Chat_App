@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App | Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="container" data-current-user-id="{{ session['user_id'] }}">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <h2>{{ session['username'] }}</h2>
+                <p class="sidebar-subtitle">Your conversations</p>
+            </div>
+            <div class="sidebar-links">
+                <a href="{{ url_for('main.profile') }}" class="link">Edit profile</a>
+                <a href="{{ url_for('main.groups') }}" class="link">Groups</a>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search users" aria-label="Search users">
+            </div>
+
+            <div class="user-list" id="userList">
+                {% for user in users %}
+                    <a
+                        href="{{ url_for('main.dashboard', chat=user['id']) }}"
+                        class="user {% if selected_user == user['id'] %}active{% endif %}"
+                        data-user-id="{{ user['id'] }}"
+                    >
+                        <span class="user-name">{{ user['name'] }}</span>
+                        <span class="user-meta">
+                            <span class="user-last-message">{{ user['last_message'] or '' }}</span>
+                            <span class="badge {% if user['unread_count'] == 0 %}hidden{% endif %}">{{ user['unread_count'] if user['unread_count'] > 0 else '' }}</span>
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+
+            <form method="POST" action="{{ url_for('main.logout') }}" class="logout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout">Log Out</button>
+            </form>
+        </aside>
+
+        <section class="chat-area">
+            {% if selected_user %}
+                <header class="chat-header">
+                    <div class="chat-header-main">
+                        <h3>{{ selected_username }}</h3>
+                        <p>Private conversation</p>
+                    </div>
+                    <form method="GET" action="{{ url_for('main.search_messages') }}" class="chat-search-form">
+                        <input type="hidden" name="chat" value="{{ selected_user }}">
+                        <input type="text" name="q" placeholder="Search messages in this chat" maxlength="120" aria-label="Search messages in this chat">
+                        <button type="submit">Search</button>
+                    </form>
+                </header>
+
+                <div class="chat-box">
+                    {% for msg in messages %}
+                        {% set is_mine = msg['sender_id'] == session['user_id'] %}
+                        <div class="message-row {% if is_mine %}mine{% else %}other{% endif %}" data-id="{{ msg['id'] }}">
+                            <article class="message-bubble {% if is_mine %}my-msg{% else %}other-msg{% endif %}" tabindex="0">
+                                <p class="message-text">{{ msg['message'] }}</p>
+                                <small class="message-status">{{ msg['status'] }}</small>
+                            </article>
+                            <div class="message-actions-wrap">
+                                <button
+                                    type="button"
+                                    class="message-menu-trigger"
+                                    aria-label="Open message actions"
+                                    aria-haspopup="menu"
+                                    aria-expanded="false"
+                                >
+                                    &#8942;
+                                </button>
+                                <div class="message-menu" role="menu" aria-label="Message actions">
+                                    <button type="button" class="menu-item copy-message" data-message-text="{{ msg['message'] }}" role="menuitem">
+                                        Copy
+                                    </button>
+                                    {% if is_mine and not msg['is_deleted'] %}
+                                        <button type="button" class="menu-item edit-toggle" role="menuitem">Edit</button>
+                                        <form method="POST" action="{{ url_for('main.edit_message', message_id=msg['id']) }}" class="menu-item-form edit-form">
+                                            {{ edit_form.csrf_token }}
+                                            <input type="hidden" name="chat" value="{{ selected_user }}">
+                                            <label class="sr-only" for="edit-message-{{ msg['id'] }}">Edit message</label>
+                                            <input id="edit-message-{{ msg['id'] }}" type="text" name="message" value="{{ msg['message'] }}" maxlength="500">
+                                            <button type="submit" class="menu-item menu-submit">Save</button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('main.delete_message', message_id=msg['id']) }}" class="menu-item-form delete-form">
+                                            {{ form.csrf_token }}
+                                            <input type="hidden" name="chat" value="{{ selected_user }}">
+                                            <button type="submit" class="menu-item danger" role="menuitem">Delete</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <form method="POST" action="{{ url_for('main.chat', user_id=selected_user) }}" class="chat-input">
+                    {{ form.csrf_token }}
+                    <input type="text" name="message" placeholder="Type a message..." maxlength="500" required>
+                    <button type="submit">Send</button>
+                </form>
+            {% else %}
+                <div class="empty-chat-state">
+                    <h3>Select a chat</h3>
+                    <p>Pick a conversation from the left to start messaging.</p>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='script.js', v='20260502m') }}"></script>
+</body>
+</html>
