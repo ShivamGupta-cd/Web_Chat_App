@@ -63,7 +63,9 @@
                         <div class="message-row {% if is_mine %}mine{% else %}other{% endif %}" data-id="{{ msg['id'] }}">
                             <article class="message-bubble {% if is_mine %}my-msg{% else %}other-msg{% endif %}" tabindex="0">
                                 <p class="message-text">{{ msg['message'] }}</p>
+                                {% if is_mine %}
                                 <small class="message-status">{{ msg['status'] }}</small>
+                                {% endif %}
                             </article>
                             <div class="message-actions-wrap">
                                 <button

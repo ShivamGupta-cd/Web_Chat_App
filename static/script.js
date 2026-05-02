@@ -81,12 +81,13 @@ function buildMessageRow(data) {
     text.className = "message-text";
     text.textContent = data.message;
 
-    const status = document.createElement("small");
-    status.className = "message-status";
-    status.textContent = data.status || "sent";
-
     bubble.appendChild(text);
-    bubble.appendChild(status);
+    if (isMine) {
+        const status = document.createElement("small");
+        status.className = "message-status";
+        status.textContent = data.status || "sent";
+        bubble.appendChild(status);
+    }
     row.appendChild(bubble);
 
     const actions = document.createElement("div");
@@ -138,7 +139,7 @@ function clearConversationUnread(userId) {
 
 function updateMessageStatus(messageId, status) {
     const row = document.querySelector(`[data-id="${messageId}"]`);
-    if (!row) {
+    if (!row || !row.classList.contains("mine")) {
         return;
     }
     const statusNode = row.querySelector(".message-status");
@@ -205,9 +206,11 @@ function renderMessage(rawData) {
         : null;
     if (existingByNonce) {
         existingByNonce.setAttribute("data-id", data.id);
-        const statusNode = existingByNonce.querySelector(".message-status");
-        if (statusNode) {
-            statusNode.textContent = data.status || "sent";
+        if (data.sender_id === currentUser) {
+            const statusNode = existingByNonce.querySelector(".message-status");
+            if (statusNode) {
+                statusNode.textContent = data.status || "sent";
+            }
         }
         existingByNonce.removeAttribute("data-client-nonce");
         return;
@@ -215,7 +218,9 @@ function renderMessage(rawData) {
 
     const existing = document.querySelector(`[data-id="${data.id}"]`);
     if (existing) {
-        updateMessageStatus(data.id, data.status || "sent");
+        if (data.sender_id === currentUser) {
+            updateMessageStatus(data.id, data.status || "sent");
+        }
         return;
     }
 
